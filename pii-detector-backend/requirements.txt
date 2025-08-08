@@ -1,0 +1,12 @@
+fastapi
+uvicorn
+python-multipart
+pytesseract
+pdf2image
+Pillow
+# fpdf
+PyPDF2
+python-docx
+reportlab
+cv2
+numpy
