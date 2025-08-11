@@ -171,7 +171,7 @@ def detect_pii(text: str) -> dict:
         matches.append("NAME")
         pii_values.append({"type": "NAME", "value": "Found by keyword"})
         
-     # Signature
+    # Signature
     for match in signature_pattern.findall(text):
         matches.append("SIGNATURE")
         pii_values.append({"type": "SIGNATURE", "value": match})
