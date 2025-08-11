@@ -123,7 +123,18 @@ def detect_pii(text: str) -> dict:
     pii_values = []
     lower_text = text.lower()
 
-
+# Short date detection (MM/YY or MM/DD)
+    for match in short_date_pattern.findall(text):
+        month_str, part2_str = match
+        month = int(month_str)
+        part2 = int(part2_str)
+        if 1 <= month <= 12:
+            # Part2 can be day (<=31) or year (any 2-digit usually)
+            if part2 <= 31:
+                matches.append("SHORT_DATE")
+                pii_values.append({"type": "SHORT_DATE", "value": f"{month:02d}/{part2:02d}"})
+                
+                
     # Aadhaar detection with Verhoeff check
     for match in aadhaar_pattern.findall(text):
         digits = re.sub(r'\D', '', match)
