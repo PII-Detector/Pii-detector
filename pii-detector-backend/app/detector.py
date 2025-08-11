@@ -1,5 +1,5 @@
 import re
-
+from datetime import datetime
 # ----------------------------
 # Verhoeff Algorithm Tables
 # ----------------------------
@@ -45,8 +45,9 @@ email_pattern = re.compile(r'\b\S+@\S+\.\S+\b')
 mobile_pattern = re.compile(r'(\+91[-\s]?|0)?[6-9]\d{9}\b')
 vid_pattern = re.compile(r'\b\d{4}[\s-]?\d{4}[\s-]?\d{4}[\s-]?\d{4}\b')
 dl_pattern = re.compile(r'\b[A-Z]{2}[ -]?\d{2}[ -]?\d{4}[ -]?\d{7}\b')
-dob_pattern = re.compile(r'\b(?:\d{2}[-/\s]?\d{2}[-/\s]?\d{4}|\d{4}[-/\s]?\d{2}[-/\s]?\d{2})\b'
-)
+dob_pattern = re.compile(r'\b(?:\d{2}[-/\s]?\d{2}[-/\s]?\d{4}|\d{4}[-/\s]?\d{2}[-/\s]?\d{2})\b')
+short_date_pattern = re.compile(r'\b(0[1-9]|1[0-2])[/\-](\d{2})\b')
+
 
 # Keywords for Name & Address
 ADDRESS_KEYWORDS = [
@@ -100,10 +101,28 @@ NAME_KEYWORDS = ["name", "father", "mother", "guardian"]
 #         "contains_pii": bool(matches)
 #     }
 
+
+
+def is_valid_date(date_str):
+    for fmt in ("%d-%m-%Y", "%d/%m/%Y", "%d %m %Y", "%Y-%m-%d", "%Y/%m/%d", "%Y %m %d"):
+        try:
+            dt = datetime.strptime(date_str.strip(), fmt)
+            today = datetime.now().replace(hour=0, minute=0, second=0, microsecond=0)
+            if dt <= today:
+                return True
+            else:
+                return False
+        except ValueError:
+            continue
+    return False
+
+
+
 def detect_pii(text: str) -> dict:
     matches = []
     pii_values = []
     lower_text = text.lower()
+
 
     # Aadhaar detection with Verhoeff check
     for match in aadhaar_pattern.findall(text):
@@ -137,21 +156,23 @@ def detect_pii(text: str) -> dict:
         matches.append("DRIVING_LICENSE")
         pii_values.append({"type": "DRIVING_LICENSE", "value": match})
 
-    # DOB
+    # DOB with validation
     for match in dob_pattern.findall(text):
-        matches.append("DOB")
-        pii_values.append({"type": "DOB", "value": match})
+        cleaned = re.sub(r'[-/\s]', '-', match)
+        if is_valid_date(cleaned):
+            matches.append("DOB")
+            pii_values.append({"type": "DOB", "value": match})
+
 
     # Compact DOB format (ddmmyyyy)
     compact_dob = re.findall(r'\b\d{8}\b', text)
     for dob in compact_dob:
-        if (
-            1 <= int(dob[0:2]) <= 31 and
-            1 <= int(dob[2:4]) <= 12 and
-            1900 <= int(dob[4:]) <= 2100
-        ):
+        try:
+            datetime.strptime(dob, "%d%m%Y")
             matches.append("DOB")
             pii_values.append({"type": "DOB", "value": dob})
+        except ValueError:
+            continue
 
     # Address
     if any(kw in lower_text for kw in ADDRESS_KEYWORDS):
