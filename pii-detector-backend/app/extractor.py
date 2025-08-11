@@ -81,18 +81,18 @@ def redact_image_with_pii(image_bytes: bytes) -> bytes:
     # elif(brightness >= 189 and brightness < 199):
     #     enhancer = ImageEnhance.Brightness(image)
     #     image = enhancer.enhance(1.1) # 1.0 = original, >1.0 = brighter, <1.0 = darker
-    # elif(brightness >= 179 and brightness < 189):
-    #     enhancer = ImageEnhance.Brightness(image)
-    #     image = enhancer.enhance(1.1) # 1.0 = original, >1.0 = brighter, <1.0 = darker
     # el
-    if(brightness < 179):
+    if(brightness < 175 and brightness >= 179):
+        enhancer = ImageEnhance.Brightness(image)
+        image = enhancer.enhance(1.1) # 1.0 = original, >1.0 = brighter, <1.0 = darker
+    elif(brightness < 179):
         enhancer = ImageEnhance.Brightness(image)
         image = enhancer.enhance(1.3) # 1.0 = original, >1.0 = brighter, <1.0 = darker
   
 
     # Step 1: Adjust brightness
     # enhancer = ImageEnhance.Brightness(image)
-    # image = enhancer.enhance(1.3) # 1.0 = original, >1.0 = brighter, <1.0 = darker
+    # image = enhancer.enhance(0.95) # 1.0 = original, >1.0 = brighter, <1.0 = darker
 
     np_image = np.array(image)
     brightness = np.mean(np_image)

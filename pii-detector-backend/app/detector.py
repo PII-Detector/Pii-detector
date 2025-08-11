@@ -1,5 +1,5 @@
 import re
-
+from dateutil.parser import parse
 # ----------------------------
 # Verhoeff Algorithm Tables
 # ----------------------------
@@ -46,6 +46,7 @@ mobile_pattern = re.compile(r'(\+91[-\s]?|0)?[6-9]\d{9}\b')
 vid_pattern = re.compile(r'\b\d{4}[\s-]?\d{4}[\s-]?\d{4}[\s-]?\d{4}\b')
 dl_pattern = re.compile(r'\b[A-Z]{2}[ -]?\d{2}[ -]?\d{4}[ -]?\d{7}\b')
 dob_pattern = re.compile(r'\b(?:\d{2}[-/\s]?\d{2}[-/\s]?\d{4}|\d{4}[-/\s]?\d{2}[-/\s]?\d{2})\b'
+                        #  \b(?:\d{1,2}[-/\s]?(?:\d{1,2}|\w+)[-/\s]?\d{2,4})\b
 )
 
 # Keywords for Name & Address
@@ -100,6 +101,14 @@ NAME_KEYWORDS = ["name", "father", "mother", "guardian"]
 #         "contains_pii": bool(matches)
 #     }
 
+# New DOB validator
+def is_valid_dob(date_str):
+    try:
+        dt = parse(date_str, dayfirst=True, fuzzy=True)
+        return 1900 <= dt.year <= 2025
+    except Exception:
+        return False
+
 def detect_pii(text: str) -> dict:
     matches = []
     pii_values = []
@@ -137,19 +146,16 @@ def detect_pii(text: str) -> dict:
         matches.append("DRIVING_LICENSE")
         pii_values.append({"type": "DRIVING_LICENSE", "value": match})
 
-    # DOB
+   # DOB (using date parser)
     for match in dob_pattern.findall(text):
-        matches.append("DOB")
-        pii_values.append({"type": "DOB", "value": match})
+        if is_valid_dob(match):
+            matches.append("DOB")
+            pii_values.append({"type": "DOB", "value": match})
 
-    # Compact DOB format (ddmmyyyy)
+    # Compact DOB (ddmmyyyy) check
     compact_dob = re.findall(r'\b\d{8}\b', text)
     for dob in compact_dob:
-        if (
-            1 <= int(dob[0:2]) <= 31 and
-            1 <= int(dob[2:4]) <= 12 and
-            1900 <= int(dob[4:]) <= 2100
-        ):
+        if is_valid_dob(dob):
             matches.append("DOB")
             pii_values.append({"type": "DOB", "value": dob})
 
