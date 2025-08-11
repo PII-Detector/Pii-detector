@@ -8,5 +8,4 @@ Pillow
 PyPDF2
 python-docx
 reportlab
-cv2
 numpy
