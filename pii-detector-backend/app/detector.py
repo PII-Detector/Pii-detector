@@ -48,6 +48,8 @@ dl_pattern = re.compile(r'\b[A-Z]{2}[ -]?\d{2}[ -]?\d{4}[ -]?\d{7}\b')
 dob_pattern = re.compile(r'\b(?:\d{2}[-/\s]?\d{2}[-/\s]?\d{4}|\d{4}[-/\s]?\d{2}[-/\s]?\d{2})\b'
                         #  \b(?:\d{1,2}[-/\s]?(?:\d{1,2}|\w+)[-/\s]?\d{2,4})\b
 )
+# Signature pattern
+signature_pattern = re.compile(r'\b(?:signature|sign|signed\s+by|sig\.)\b', re.IGNORECASE)
 
 # Keywords for Name & Address
 ADDRESS_KEYWORDS = [
@@ -168,6 +170,11 @@ def detect_pii(text: str) -> dict:
     if any(kw in lower_text for kw in NAME_KEYWORDS):
         matches.append("NAME")
         pii_values.append({"type": "NAME", "value": "Found by keyword"})
+        
+     # Signature
+    for match in signature_pattern.findall(text):
+        matches.append("SIGNATURE")
+        pii_values.append({"type": "SIGNATURE", "value": match})
 
     return {
         "matches": matches,
