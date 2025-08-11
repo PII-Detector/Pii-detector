@@ -1,5 +1,5 @@
 import re
-from dateutil.parser import parse
+from datetime import datetime
 # ----------------------------
 # Verhoeff Algorithm Tables
 # ----------------------------
@@ -45,11 +45,9 @@ email_pattern = re.compile(r'\b\S+@\S+\.\S+\b')
 mobile_pattern = re.compile(r'(\+91[-\s]?|0)?[6-9]\d{9}\b')
 vid_pattern = re.compile(r'\b\d{4}[\s-]?\d{4}[\s-]?\d{4}[\s-]?\d{4}\b')
 dl_pattern = re.compile(r'\b[A-Z]{2}[ -]?\d{2}[ -]?\d{4}[ -]?\d{7}\b')
-dob_pattern = re.compile(r'\b(?:\d{2}[-/\s]?\d{2}[-/\s]?\d{4}|\d{4}[-/\s]?\d{2}[-/\s]?\d{2})\b'
-                        #  \b(?:\d{1,2}[-/\s]?(?:\d{1,2}|\w+)[-/\s]?\d{2,4})\b
-)
-# Signature pattern
-signature_pattern = re.compile(r'\b(?:signature|sign|signed\s+by|sig\.)\b', re.IGNORECASE)
+dob_pattern = re.compile(r'\b(?:\d{2}[-/\s]?\d{2}[-/\s]?\d{4}|\d{4}[-/\s]?\d{2}[-/\s]?\d{2})\b')
+short_date_pattern = re.compile(r'\b(0[1-9]|1[0-2])[/\-](\d{2})\b')
+
 
 # Keywords for Name & Address
 ADDRESS_KEYWORDS = [
@@ -103,19 +101,40 @@ NAME_KEYWORDS = ["name", "father", "mother", "guardian"]
 #         "contains_pii": bool(matches)
 #     }
 
-# New DOB validator
-def is_valid_dob(date_str):
-    try:
-        dt = parse(date_str, dayfirst=True, fuzzy=True)
-        return 1900 <= dt.year <= 2025
-    except Exception:
-        return False
+
+
+def is_valid_date(date_str):
+    for fmt in ("%d-%m-%Y", "%d/%m/%Y", "%d %m %Y", "%Y-%m-%d", "%Y/%m/%d", "%Y %m %d"):
+        try:
+            dt = datetime.strptime(date_str.strip(), fmt)
+            today = datetime.now().replace(hour=0, minute=0, second=0, microsecond=0)
+            if dt <= today:
+                return True
+            else:
+                return False
+        except ValueError:
+            continue
+    return False
+
+
 
 def detect_pii(text: str) -> dict:
     matches = []
     pii_values = []
     lower_text = text.lower()
 
+# Short date detection (MM/YY or MM/DD)
+    for match in short_date_pattern.findall(text):
+        month_str, part2_str = match
+        month = int(month_str)
+        part2 = int(part2_str)
+        if 1 <= month <= 12:
+            # Part2 can be day (<=31) or year (any 2-digit usually)
+            if part2 <= 31:
+                matches.append("SHORT_DATE")
+                pii_values.append({"type": "SHORT_DATE", "value": f"{month:02d}/{part2:02d}"})
+                
+                
     # Aadhaar detection with Verhoeff check
     for match in aadhaar_pattern.findall(text):
         digits = re.sub(r'\D', '', match)
@@ -148,18 +167,23 @@ def detect_pii(text: str) -> dict:
         matches.append("DRIVING_LICENSE")
         pii_values.append({"type": "DRIVING_LICENSE", "value": match})
 
-   # DOB (using date parser)
+    # DOB with validation
     for match in dob_pattern.findall(text):
-        if is_valid_dob(match):
+        cleaned = re.sub(r'[-/\s]', '-', match)
+        if is_valid_date(cleaned):
             matches.append("DOB")
             pii_values.append({"type": "DOB", "value": match})
 
-    # Compact DOB (ddmmyyyy) check
+
+    # Compact DOB format (ddmmyyyy)
     compact_dob = re.findall(r'\b\d{8}\b', text)
     for dob in compact_dob:
-        if is_valid_dob(dob):
+        try:
+            datetime.strptime(dob, "%d%m%Y")
             matches.append("DOB")
             pii_values.append({"type": "DOB", "value": dob})
+        except ValueError:
+            continue
 
     # Address
     if any(kw in lower_text for kw in ADDRESS_KEYWORDS):
@@ -170,11 +194,14 @@ def detect_pii(text: str) -> dict:
     if any(kw in lower_text for kw in NAME_KEYWORDS):
         matches.append("NAME")
         pii_values.append({"type": "NAME", "value": "Found by keyword"})
+<<<<<<< HEAD
         
     # Signature
     for match in signature_pattern.findall(text):
         matches.append("SIGNATURE")
         pii_values.append({"type": "SIGNATURE", "value": match})
+=======
+>>>>>>> 5ff31e0470700076984cd17898aada27a38b6fa2
 
     return {
         "matches": matches,
