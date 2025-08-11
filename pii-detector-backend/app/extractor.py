@@ -75,6 +75,7 @@ def redact_image_with_pii(image_bytes: bytes) -> bytes:
     np_image = np.array(image)
     brightness = np.mean(np_image)
     print(f"Brightness: {brightness}")
+    print(f"Original Resolution: {image.width}x{image.height}")
     
     # if(brightness >= 199 and brightness <= 205):
     #     data = pytesseract.image_to_data(image, output_type=pytesseract.Output.DICT)
