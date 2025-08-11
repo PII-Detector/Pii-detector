@@ -53,16 +53,29 @@ function App() {
     toast.success("Download started.");
   };
 
+  // Render DOCX preview for original file
   useEffect(() => {
     if (file && file.type === "application/vnd.openxmlformats-officedocument.wordprocessingml.document") {
+      docxContainer.current.innerHTML = ""; // Clear previous preview
       const reader = new FileReader();
       reader.onload = async (e) => {
-        const arrayBuffer = e.target.result;
-        await renderAsync(arrayBuffer, docxContainer.current);
+        await renderAsync(e.target.result, docxContainer.current);
       };
       reader.readAsArrayBuffer(file);
     }
   }, [file]);
+
+  // Render DOCX preview for redacted file
+  useEffect(() => {
+    if (redactedBlob && redactedBlob.type === "application/vnd.openxmlformats-officedocument.wordprocessingml.document") {
+      docxContainer.current.innerHTML = ""; // Clear previous preview
+      const reader = new FileReader();
+      reader.onload = async (e) => {
+        await renderAsync(e.target.result, docxContainer.current);
+      };
+      reader.readAsArrayBuffer(redactedBlob);
+    }
+  }, [redactedBlob]);
 
   const renderPreview = (url, type, isRedacted = false) => {
     if (type.includes("pdf")) {
@@ -72,7 +85,7 @@ function App() {
     } else if (type.includes("officedocument.wordprocessingml.document")) {
       return (
         <div className="p-4 border rounded bg-blue-50 text-blue-800">
-          DOCX file uploaded. Preview:
+          DOCX file preview:
           <div ref={docxContainer} className="mt-2 max-h-[500px] overflow-auto bg-white p-2 shadow" />
           {isRedacted && <p className="mt-2 text-green-600 font-medium">Redacted DOCX ready. Click download below.</p>}
         </div>
