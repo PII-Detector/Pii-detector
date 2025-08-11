@@ -194,14 +194,11 @@ def detect_pii(text: str) -> dict:
     if any(kw in lower_text for kw in NAME_KEYWORDS):
         matches.append("NAME")
         pii_values.append({"type": "NAME", "value": "Found by keyword"})
-<<<<<<< HEAD
         
-    # Signature
-    for match in signature_pattern.findall(text):
-        matches.append("SIGNATURE")
-        pii_values.append({"type": "SIGNATURE", "value": match})
-=======
->>>>>>> 5ff31e0470700076984cd17898aada27a38b6fa2
+    # # Signature
+    # for match in signature_pattern.findall(text):
+    #     matches.append("SIGNATURE")
+    #     pii_values.append({"type": "SIGNATURE", "value": match})
 
     return {
         "matches": matches,
