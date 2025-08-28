@@ -3,40 +3,7 @@ from datetime import datetime
 import cv2
 import numpy as np
 from PIL import Image
-
-# Verhoeff Algorithm Tables
-
-verhoeff_table_d = [
-    [0,1,2,3,4,5,6,7,8,9],
-    [1,2,3,4,0,6,7,8,9,5],
-    [2,3,4,0,1,7,8,9,5,6],
-    [3,4,0,1,2,8,9,5,6,7],
-    [4,0,1,2,3,9,5,6,7,8],
-    [5,9,8,7,6,0,4,3,2,1],
-    [6,5,9,8,7,1,0,4,3,2],
-    [7,6,5,9,8,2,1,0,4,3],
-    [8,7,6,5,9,3,2,1,0,4],
-    [9,8,7,6,5,4,3,2,1,0]
-]
-
-verhoeff_table_p = [
-    [0,1,2,3,4,5,6,7,8,9],
-    [1,5,7,6,2,8,3,0,9,4],
-    [5,8,0,3,7,9,6,1,4,2],
-    [8,9,1,6,0,4,3,5,2,7],
-    [9,4,5,3,1,2,6,8,7,0],
-    [4,2,8,6,5,7,3,9,0,1],
-    [2,7,9,3,8,0,6,4,1,5],
-    [7,0,4,6,9,1,3,2,5,8]
-]
-
-def validate_verhoeff(number: str) -> bool:
-    """Check if the 12-digit Aadhaar number is valid using Verhoeff algorithm."""
-    c = 0
-    num = number[::-1]
-    for i, item in enumerate(num):
-        c = verhoeff_table_d[c][verhoeff_table_p[i % 8][int(item)]]
-    return c == 0
+from .verhoeff_algorithm import validate_verhoeff
 
 # Regex Patterns for PII
 
@@ -65,6 +32,60 @@ ADDRESS_KEYWORDS = [
 ]
 # NAME_KEYWORDS = ["name", "father", "mother", "guardian"]
 
+SIGNATURE_KEYWORDS = [
+    "signature", "signed", "signatory", "authorised signatory", "sig."
+]
+
+def detect_signature_keywords(text: str) -> dict:
+    matches = []
+    pii_values = []
+    lower_text = text.lower()
+
+    for kw in SIGNATURE_KEYWORDS:
+        if kw in lower_text:
+            matches.append("SIGNATURE_KEYWORD")
+            pii_values.append({"type": "SIGNATURE", "value": kw})
+
+    return {
+        "matches": matches,
+        "contains_signature_keyword": bool(matches),
+        "pii_details": pii_values
+    }
+    
+def detect_aadhar_card_no(text: str) -> dict:
+    matches = []
+    pii_values = []
+    lower_text = text.lower()
+
+    # Aadhaar detection with Verhoeff check
+    for match in aadhaar_pattern.findall(text):
+        digits = re.sub(r'\D', '', match)
+        if len(digits) == 12 and validate_verhoeff(digits):
+            matches.append("AADHAAR")
+            pii_values.append({"type": "AADHAAR", "value": match})
+
+    return {
+        "matches": matches,
+        "contains_aadhar_card_no": bool(matches),
+        "aadhar_card_no_details": pii_values
+    }
+    
+def detect_driving_licence_no(text: str) -> dict:
+    matches = []
+    pii_values = []
+    lower_text = text.lower()
+
+    # DL
+    for match in dl_pattern.findall(text):
+        matches.append("DRIVING_LICENSE")
+        pii_values.append({"type": "DRIVING_LICENSE", "value": match})
+
+    return {
+        "matches": matches,
+        "contains_driving_licence_no": bool(matches),
+        "driving_licence_no_details": pii_values
+    }
+
 
 def is_valid_date(date_str):
     for fmt in ("%d-%m-%Y", "%d/%m/%Y", "%d %m %Y", "%Y-%m-%d", "%Y/%m/%d", "%Y %m %d"):
@@ -80,45 +101,114 @@ def is_valid_date(date_str):
     return False
 
 
+# def detect_pii_dob(text: str) -> dict:
+#     matches = []
+#     pii_values = []
+#     lower_text = text.lower()
+    
+#     # DOB with validation
+#     for match in dob_pattern.findall(text):
+#         cleaned = re.sub(r'[-/\s]', '-', match)
+#         if is_valid_date(cleaned):
+#             matches.append("DOB")
+#             pii_values.append({"type": "DOB", "value": match})
+
+
+#     # Compact DOB format (ddmmyyyy)
+#     compact_dob = re.findall(r'\b\d{8}\b', text)
+#     for dob in compact_dob:
+#         try:
+#             datetime.strptime(dob, "%d%m%Y")
+#             matches.append("DOB")
+#             pii_values.append({"type": "DOB", "value": dob})
+#         except ValueError:
+#             continue
+        
+#     # Short date detection (MM/YY or MM/DD)
+#     for match in short_date_pattern.findall(text):
+#         month_str, part2_str = match
+#         month = int(month_str)
+#         part2 = int(part2_str)
+#         if 1 <= month <= 12:
+#             # Part2 can be day (<=31) or year (any 2-digit usually)
+#             if part2 <= 31:
+#                 matches.append("SHORT_DATE")
+#                 pii_values.append({"type": "SHORT_DATE", "value": f"{month:02d}/{part2:02d}"})
+        
+#     return {
+#         "matches": matches,
+#         "contains_pii_dob": bool(matches),
+#         "pii_details": pii_values
+#     }
+
 def detect_pii_dob(text: str) -> dict:
     matches = []
     pii_values = []
     lower_text = text.lower()
     
-    # DOB with validation
+    # Full DOB formats
     for match in dob_pattern.findall(text):
         cleaned = re.sub(r'[-/\s]', '-', match)
         if is_valid_date(cleaned):
-            matches.append("DOB")
-            pii_values.append({"type": "DOB", "value": match})
+            try:
+                # Try parsing date
+                dt = None
+                for fmt in ("%d-%m-%Y", "%d/%m/%Y", "%d %m %Y", "%Y-%m-%d", "%Y/%m/%d", "%Y %m %d"):
+                    try:
+                        dt = datetime.strptime(cleaned, fmt)
+                        break
+                    except ValueError:
+                        continue
 
+                if dt:
+                    matches.append("DOB")
+                    pii_values.append({
+                        "type": "DOB",
+                        "value": match,
+                        "day": dt.day,
+                        "month": dt.month,
+                        "year": dt.year
+                    })
+            except ValueError:
+                continue
 
     # Compact DOB format (ddmmyyyy)
     compact_dob = re.findall(r'\b\d{8}\b', text)
     for dob in compact_dob:
         try:
-            datetime.strptime(dob, "%d%m%Y")
+            dt = datetime.strptime(dob, "%d%m%Y")
             matches.append("DOB")
-            pii_values.append({"type": "DOB", "value": dob})
+            pii_values.append({
+                "type": "DOB",
+                "value": dob,
+                "day": dt.day,
+                "month": dt.month,
+                "year": dt.year
+            })
         except ValueError:
             continue
         
-    # Short date detection (MM/YY or MM/DD)
+    # Short date detection (MM/YY or MM/DD) → treat only as month+day
     for match in short_date_pattern.findall(text):
         month_str, part2_str = match
         month = int(month_str)
         part2 = int(part2_str)
-        if 1 <= month <= 12:
-            # Part2 can be day (<=31) or year (any 2-digit usually)
-            if part2 <= 31:
-                matches.append("SHORT_DATE")
-                pii_values.append({"type": "SHORT_DATE", "value": f"{month:02d}/{part2:02d}"})
+        if 1 <= month <= 12 and part2 <= 31:
+            matches.append("SHORT_DATE")
+            pii_values.append({
+                "type": "SHORT_DATE",
+                "value": f"{month:02d}/{part2:02d}",
+                "day": part2,
+                "month": month,
+                "year": None
+            })
         
     return {
         "matches": matches,
         "contains_pii_dob": bool(matches),
-        "pii_details": pii_values
+        "dob_details": pii_values
     }
+
     
 def detect_pii_address(text: str) -> dict:
     matches = []
@@ -139,7 +229,7 @@ def detect_pii_address(text: str) -> dict:
     return {
         "matches": matches,
         "contains_pii_address": bool(matches),
-        "pii_details": pii_values
+        "address_details": pii_values
     }
     
 
@@ -147,13 +237,6 @@ def detect_pii(text: str) -> dict:
     matches = []
     pii_values = []
     lower_text = text.lower()
-                
-    # Aadhaar detection with Verhoeff check
-    for match in aadhaar_pattern.findall(text):
-        digits = re.sub(r'\D', '', match)
-        if len(digits) == 12 and validate_verhoeff(digits):
-            matches.append("AADHAAR")
-            pii_values.append({"type": "AADHAAR", "value": match})
 
     # PAN
     for match in pan_pattern.findall(text):
@@ -174,11 +257,6 @@ def detect_pii(text: str) -> dict:
     for match in vid_pattern.findall(text):
         matches.append("VID")
         pii_values.append({"type": "VID", "value": match})
-
-    # DL
-    for match in dl_pattern.findall(text):
-        matches.append("DRIVING_LICENSE")
-        pii_values.append({"type": "DRIVING_LICENSE", "value": match})
         
     return {
         "matches": matches,
