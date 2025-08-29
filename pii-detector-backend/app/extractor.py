@@ -22,6 +22,7 @@ def redact_file_with_format(filename: str, file_bytes: bytes):
     elif ext in ["png", "jpg", "jpeg"]:
         processed_image = redact_image_with_pii_dob(file_bytes)
         processed_image = redact_image_with_aadhar_card_no(processed_image)
+        processed_image = redact_image_with_driving_licence_no(processed_image)
         processed_image = redact_image_with_pii(processed_image)
         processed_image = redact_address_from_image(processed_image)
         # processed_image = redact_signatures_from_image(processed_image)
@@ -270,6 +271,8 @@ def redact_image_with_aadhar_card_no(image_bytes: bytes) -> bytes:
     output.seek(0)
     return output.read()
 
+# -------------------------- #
+# driving licence no - character based
 def redact_image_with_driving_licence_no(image_bytes: bytes) -> bytes:
     image = Image.open(io.BytesIO(image_bytes))
     draw = ImageDraw.Draw(image)
@@ -309,7 +312,7 @@ def redact_image_with_driving_licence_no(image_bytes: bytes) -> bytes:
         line_text = " ".join(line["text"])
         result = detect_driving_licence_no(line_text)
 
-        if result['contains_aadhar_card_no']:
+        if result['contains_driving_licence_no']:
             print(f"Driving Licence No Detected in Line: {line_text}")
 
             # Find bounding box for this line
@@ -317,18 +320,17 @@ def redact_image_with_driving_licence_no(image_bytes: bytes) -> bytes:
             min_y = min(p[1] for p in line["positions"])
             max_x = max(p[0] + p[2] for p in line["positions"])
             max_y = max(p[1] + p[3] for p in line["positions"])
-
+            
             for pii in result['driving_licence_no_details']:
-                aadhar_value = re.sub(r'\D', '', pii['value'])  # only digits
+                driver_no_value = re.sub(r'\W', '', pii['value'])  # keep alphanumeric only
                 target_index = 0
-                max_redact = 8  # redact first 8 digits (change if needed)
+                max_redact = 12  # redact 12 characters of licence no (alphabets + digits)
 
                 for ch, cx1, cy1, cx2, cy2 in char_positions:
                     if (
                         target_index < max_redact
-                        and ch.isdigit()
                         and cx1 >= min_x and cx2 <= max_x and cy1 >= min_y and cy2 <= max_y
-                        and ch == aadhar_value[target_index]
+                        and ch.upper() == driver_no_value[target_index].upper()
                     ):
                         draw.rectangle([cx1, cy1, cx2, cy2], fill="black")
                         target_index += 1
