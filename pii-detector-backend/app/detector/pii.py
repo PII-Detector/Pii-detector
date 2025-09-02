@@ -6,9 +6,9 @@ def detect_pii(text: str) -> dict:
     lower_text = text.lower()
 
     # PAN
-    for match in pan_pattern.findall(text):
-        matches.append("PAN")
-        pii_values.append({"type": "PAN", "value": match})
+    # for match in pan_pattern.findall(text):
+    #     matches.append("PAN")
+    #     pii_values.append({"type": "PAN", "value": match})
 
     # Email
     for match in email_pattern.findall(text):
@@ -16,9 +16,9 @@ def detect_pii(text: str) -> dict:
         pii_values.append({"type": "EMAIL", "value": match})
 
     # Mobile
-    for match in mobile_pattern.findall(text):
-        matches.append("MOBILE")
-        pii_values.append({"type": "MOBILE", "value": match})
+    # for match in mobile_pattern.findall(text):
+    #     matches.append("MOBILE")
+    #     pii_values.append({"type": "MOBILE", "value": match})
 
     # VID
     for match in vid_pattern.findall(text):

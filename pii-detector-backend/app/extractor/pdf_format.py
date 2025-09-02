@@ -1,11 +1,17 @@
 import io
+from pdf2image import convert_from_bytes
+from reportlab.pdfgen import canvas
+from reportlab.lib.pagesizes import A4
+from reportlab.lib.utils import ImageReader
+from PIL import Image
+
 from app.redactor.dob import redact_image_with_pii_dob
 from app.redactor.pii import redact_image_with_pii
 from app.redactor.aadhar_card_no import redact_image_with_aadhar_card_no
 from app.redactor.address import redact_address_from_image
 from app.redactor.driving_licence_no import redact_image_with_driving_licence_no
 from app.redactor.signature import redact_signatures_from_image
-
+from app.redactor.mobile_number import redact_image_with_mobile_number
 
 def redact_pdf_with_pii(pdf_bytes: bytes) -> bytes:
     redacted_images = []
@@ -14,12 +20,15 @@ def redact_pdf_with_pii(pdf_bytes: bytes) -> bytes:
     for img in images:
         buf = io.BytesIO()
         img.save(buf, format="PNG")
+
         redacted_pii = redact_image_with_pii_dob(buf.getvalue())
         redacted_pii = redact_image_with_pii(redacted_pii)
         redacted_pii = redact_address_from_image(redacted_pii)
         redacted_pii = redact_image_with_aadhar_card_no(redacted_pii)
         redacted_pii = redact_image_with_driving_licence_no(redacted_pii)
         redacted_pii = redact_signatures_from_image(redacted_pii)
+        redacted_pii = redact_image_with_mobile_number(redacted_pii)
+
         redacted_images.append(Image.open(io.BytesIO(redacted_pii)))
 
     out_buf = io.BytesIO()
