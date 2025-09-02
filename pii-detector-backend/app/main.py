@@ -1,7 +1,7 @@
 from fastapi import FastAPI, UploadFile, File
 from fastapi.responses import StreamingResponse
 from fastapi.middleware.cors import CORSMiddleware
-from .extractor import redact_file_with_format
+from app.extractor.extractor import redact_file_with_format
 import io
 import os
 
@@ -16,7 +16,7 @@ origins = [
 
 app.add_middleware(
     CORSMiddleware,
-    allow_origins=origins,           # or ["*"] to allow all
+    allow_origins=origins,       
     allow_credentials=True,
     allow_methods=["*"],
     allow_headers=["*"],
