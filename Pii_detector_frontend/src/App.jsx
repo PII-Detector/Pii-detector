@@ -13,6 +13,8 @@ function App() {
   const [redactedBlob, setRedactedBlob] = useState(null);
   const [loading, setLoading] = useState(false);
   const docxContainer = useRef(null);
+  const redactedDocxContainer = useRef(null);
+
 
   const handleFileChange = (e) => {
     const uploaded = e.target.files[0];
@@ -64,6 +66,21 @@ function App() {
     }
   }, [file]);
 
+  useEffect(() => {
+    if (redactedBlob && redactedBlob.type === "application/vnd.openxmlformats-officedocument.wordprocessingml.document") {
+      const reader = new FileReader();
+      reader.onload = async (e) => {
+        const arrayBuffer = e.target.result;
+        if (redactedDocxContainer.current) {
+          redactedDocxContainer.current.innerHTML = ""; // clear previous render
+        }
+        await renderAsync(arrayBuffer, redactedDocxContainer.current);
+      };
+      reader.readAsArrayBuffer(redactedBlob);
+    }
+  }, [redactedBlob]);
+
+
   const renderPreview = (url, type, isRedacted = false) => {
     if (type.includes("pdf")) {
       return <iframe src={url} width="100%" height="500px" className="rounded-lg border shadow" title="PDF preview" />;
@@ -72,8 +89,11 @@ function App() {
     } else if (type.includes("officedocument.wordprocessingml.document")) {
       return (
         <div className="p-4 border rounded bg-blue-50 text-blue-800">
-          DOCX file uploaded. Preview:
-          <div ref={docxContainer} className="mt-2 max-h-[500px] overflow-auto bg-white p-2 shadow" />
+          DOCX file preview:
+          <div
+            ref={isRedacted ? redactedDocxContainer : docxContainer}
+            className="mt-2 max-h-[500px] overflow-auto bg-white p-2 shadow"
+          />
           {isRedacted && <p className="mt-2 text-green-600 font-medium">Redacted DOCX ready. Click download below.</p>}
         </div>
       );
