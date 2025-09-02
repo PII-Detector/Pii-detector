@@ -9,4 +9,4 @@ PyPDF2
 python-docx
 reportlab
 numpy
-cv2
+opencv-python
