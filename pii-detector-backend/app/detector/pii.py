@@ -5,15 +5,7 @@ def detect_pii(text: str) -> dict:
     pii_values = []
     lower_text = text.lower()
 
-    # PAN
-    for match in pan_pattern.findall(text):
-        matches.append("PAN")
-        pii_values.append({"type": "PAN", "value": match})
-
-    # Email
-    for match in email_pattern.findall(text):
-        matches.append("EMAIL")
-        pii_values.append({"type": "EMAIL", "value": match})
+    
 
     # Mobile
     for match in mobile_pattern.findall(text):

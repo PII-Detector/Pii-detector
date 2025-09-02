@@ -1,10 +1,10 @@
 import io
 from docx import Document
-from app.redactor.pii import redact_image_with_pii
-from app.redactor.dob import redact_image_with_pii_dob
-from app.redactor.address import redact_address_from_image
-from app.redactor.aadhar_card_no import redact_image_with_aadhar_card_no
-from app.redactor.driving_licence_no import redact_image_with_driving_licence_no
+from app.detector.pii import detect_pii
+from app.detector.dob import detect_pii_dob
+from app.detector.address import detect_pii_address
+from app.detector.aadhar_card_no import detect_aadhar_card_no
+from app.detector.driving_licence_no import detect_driving_licence_no
 
 def redact_docx_with_pii(docx_bytes: bytes) -> bytes:
     doc = Document(io.BytesIO(docx_bytes))
