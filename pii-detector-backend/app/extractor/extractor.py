@@ -1,10 +1,12 @@
 from app.redactor.dob import redact_image_with_pii_dob
 from app.redactor.driving_licence_no import redact_image_with_driving_licence_no
 from app.redactor.aadhar_card_no import redact_image_with_aadhar_card_no
-from app.redactor.pii import redact_image_with_pii
+# from app.redactor.pii import redact_image_with_pii
 from app.redactor.address import redact_address_from_image
 from app.redactor.pan_card_no import redact_image_with_pan_card_no
 from app.redactor.mobile_number import redact_image_with_mobile_number
+from app.redactor.email import redact_image_with_email
+from app.redactor.vid import redact_image_with_vid
 from .pdf_format import redact_pdf_with_pii
 from .docx_format import redact_docx_with_pii
 
@@ -19,7 +21,9 @@ def redact_file_with_format(filename: str, file_bytes: bytes):
         processed_image = redact_image_with_aadhar_card_no(processed_image)
         processed_image = redact_image_with_driving_licence_no(processed_image)
         processed_image = redact_image_with_pan_card_no(processed_image)
-        processed_image = redact_image_with_pii(processed_image)
+        processed_image = redact_image_with_vid(processed_image)
+        processed_image = redact_image_with_email(processed_image)
+        # processed_image = redact_image_with_pii(processed_image)
         processed_image = redact_address_from_image(processed_image)
         processed_image = redact_image_with_mobile_number(processed_image)
         # processed_image = redact_signatures_from_image(processed_image)

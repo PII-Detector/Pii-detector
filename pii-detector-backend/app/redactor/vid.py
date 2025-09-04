@@ -5,7 +5,7 @@ from docx import Document
 import pytesseract
 import io
 # from fpdf import FPDF
-from app.detector.email import detect_email
+from app.detector.vid import detect_vid
 from reportlab.pdfgen import canvas
 from reportlab.lib.pagesizes import A4
 from reportlab.lib.utils import ImageReader
@@ -15,7 +15,7 @@ import re
 
 # -------------------------- #
 # Pan card no - character based
-def redact_image_with_email(image_bytes: bytes) -> bytes:
+def redact_image_with_vid(image_bytes: bytes) -> bytes:
     image = Image.open(io.BytesIO(image_bytes))
     draw = ImageDraw.Draw(image)
     width, height = image.size
@@ -52,10 +52,10 @@ def redact_image_with_email(image_bytes: bytes) -> bytes:
     # Process each line
     for line in lines.values():
         line_text = " ".join(line["text"])
-        result = detect_email(line_text)
+        result = detect_vid(line_text)
 
-        if result['contains_email']:
-            print(f"Email Detected in Line: {line_text}")
+        if result['contains_vid']:
+            print(f"VID Detected in Line: {line_text}")
 
             # Find bounding box for this line
             min_x = min(p[0] for p in line["positions"])
@@ -63,20 +63,20 @@ def redact_image_with_email(image_bytes: bytes) -> bytes:
             max_x = max(p[0] + p[2] for p in line["positions"])
             max_y = max(p[1] + p[3] for p in line["positions"])
             
-            for pii in result['email_details']:
-                email_value = re.sub(r'\W', '', pii['value'])  # keep alphanumeric only
-                total_len = len(email_value)
+            for pii in result['vid_details']:
+                vid_value = re.sub(r'\W', '', pii['value'])  # keep alphanumeric only
+                total_len = len(vid_value)
 
-                # Characters to redact: from index 2 to total_len-3
-                redact_start = 0
-                redact_end = total_len - 8 
+                # Characters to redact: from index 2 to total_len-2
+                redact_start = 2
+                redact_end = total_len - 2
 
                 target_index = 0
                 for ch, cx1, cy1, cx2, cy2 in char_positions:
                     if (
                         target_index < total_len
                         and cx1 >= min_x and cx2 <= max_x and cy1 >= min_y and cy2 <= max_y
-                        and ch.upper() == email_value[target_index].upper()
+                        and ch.upper() == vid_value[target_index].upper()
                     ):
                         # redact only middle characters
                         if redact_start <= target_index < redact_end:

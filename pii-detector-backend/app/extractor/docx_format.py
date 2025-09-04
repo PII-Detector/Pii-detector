@@ -1,8 +1,9 @@
 import io
 from docx import Document
 import re
-from app.detector.pii import detect_pii
+# from app.detector.pii import detect_pii
 from app.detector.dob import detect_pii_dob
+from app.detector.vid import detect_vid
 from app.detector.address import detect_pii_address
 from app.detector.aadhar_card_no import detect_aadhar_card_no
 from app.detector.driving_licence_no import detect_driving_licence_no
@@ -57,8 +58,8 @@ def redact_docx_with_pii(docx_bytes: bytes) -> bytes:
                 elif detect_pii_address(redacted_word).get("matches"):
                     redacted_word = "[REDACTED]"
 
-                # Generic PII
-                elif detect_pii(redacted_word).get("matches"):
+                # Generic VID
+                elif detect_vid(redacted_word).get("matches"):
                     redacted_word = "[REDACTED]"
 
                 new_words.append(redacted_word)
