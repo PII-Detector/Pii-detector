@@ -10,8 +10,9 @@ from app.redactor.dob import redact_image_with_pii_dob
 from app.redactor.aadhar_card_no import redact_image_with_aadhar_card_no
 from app.redactor.address import redact_address_from_image
 from app.redactor.driving_licence_no import redact_image_with_driving_licence_no
-from app.redactor.signature import redact_signatures_from_image
+# from app.redactor.signature import redact_signatures_from_image
 from app.redactor.mobile_number import redact_image_with_mobile_number
+from app.redactor.pan_card_no import redact_image_with_pan_card_no
 
 def redact_pdf_with_pii(pdf_bytes: bytes) -> bytes:
     redacted_images = []
@@ -25,11 +26,12 @@ def redact_pdf_with_pii(pdf_bytes: bytes) -> bytes:
         # redacted_pii = redact_image_with_pii(redacted_pii)
         redacted_pii = redact_address_from_image(redacted_pii)
         redacted_pii = redact_image_with_aadhar_card_no(redacted_pii)
+        redacted_pii = redact_image_with_pan_card_no(redacted_pii)
         redacted_pii = redact_image_with_driving_licence_no(redacted_pii)
-        redacted_pii = redact_signatures_from_image(redacted_pii)
         redacted_pii = redact_image_with_mobile_number(redacted_pii)
-
+        # redacted_pii = redact_signatures_from_image(redacted_pii)
         redacted_images.append(Image.open(io.BytesIO(redacted_pii)))
+        
 
     out_buf = io.BytesIO()
     c = canvas.Canvas(out_buf, pagesize=A4)
