@@ -1,7 +1,7 @@
 from fastapi import FastAPI, UploadFile, File
 from fastapi.responses import StreamingResponse
 from fastapi.middleware.cors import CORSMiddleware
-from app.extractor.extractor import redact_file_with_format
+from api.extractor.extractor import redact_file_with_format
 import io
 import os
 from dotenv import load_dotenv

@@ -5,7 +5,7 @@ from docx import Document
 import pytesseract
 import io
 # from fpdf import FPDF
-from app.detector.pan_card_no import detect_pan_card_no
+from api.detector.pan_card_no import detect_pan_card_no
 from reportlab.pdfgen import canvas
 from reportlab.lib.pagesizes import A4
 from reportlab.lib.utils import ImageReader

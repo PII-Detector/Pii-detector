@@ -1,5 +1,5 @@
 import re
-from app.utils.keyword import ADDRESS_KEYWORDS
+from api.utils.keyword import ADDRESS_KEYWORDS
 
 def detect_pii_address(text: str) -> dict:
     matches = []

@@ -1,4 +1,4 @@
-from app.utils.regex import email_pattern
+from api.utils.regex import email_pattern
 
 def detect_email(text: str) -> dict:
     matches = []

@@ -5,7 +5,7 @@ from docx import Document
 import pytesseract
 import io
 # from fpdf import FPDF
-from app.detector.dob import detect_pii_dob
+from api.detector.dob import detect_pii_dob
 from reportlab.pdfgen import canvas
 from reportlab.lib.pagesizes import A4
 from reportlab.lib.utils import ImageReader

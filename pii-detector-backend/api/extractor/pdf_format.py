@@ -5,14 +5,14 @@ from reportlab.lib.pagesizes import A4
 from reportlab.lib.utils import ImageReader
 from PIL import Image
 
-from app.redactor.dob import redact_image_with_pii_dob
-# from app.redactor.pii import redact_image_with_pii
-from app.redactor.aadhar_card_no import redact_image_with_aadhar_card_no
-from app.redactor.address import redact_address_from_image
-from app.redactor.driving_licence_no import redact_image_with_driving_licence_no
-# from app.redactor.signature import redact_signatures_from_image
-from app.redactor.mobile_number import redact_image_with_mobile_number
-from app.redactor.pan_card_no import redact_image_with_pan_card_no
+from api.redactor.dob import redact_image_with_pii_dob
+# from api.redactor.pii import redact_image_with_pii
+from api.redactor.aadhar_card_no import redact_image_with_aadhar_card_no
+from api.redactor.address import redact_address_from_image
+from api.redactor.driving_licence_no import redact_image_with_driving_licence_no
+# from api.redactor.signature import redact_signatures_from_image
+from api.redactor.mobile_number import redact_image_with_mobile_number
+from api.redactor.pan_card_no import redact_image_with_pan_card_no
 
 def redact_pdf_with_pii(pdf_bytes: bytes) -> bytes:
     redacted_images = []

@@ -5,7 +5,7 @@ from docx import Document
 import pytesseract
 import io
 # from fpdf import FPDF
-from app.detector.signature import detect_signature_keywords
+from api.detector.signature import detect_signature_keywords
 from reportlab.pdfgen import canvas
 from reportlab.lib.pagesizes import A4
 from reportlab.lib.utils import ImageReader
