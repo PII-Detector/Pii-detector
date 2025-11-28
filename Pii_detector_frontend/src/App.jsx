@@ -32,7 +32,7 @@ function App() {
 
     try {
       const response = await axios.post(
-        import.meta.env.VITE_BACKEND_URL + "/redact",
+        `${import.meta.env.VITE_BACKEND_URL}/redact`,
         formData,
         {
           responseType: "blob",
