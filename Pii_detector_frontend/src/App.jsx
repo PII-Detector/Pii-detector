@@ -15,7 +15,6 @@ function App() {
   const docxContainer = useRef(null);
   const redactedDocxContainer = useRef(null);
 
-
   const handleFileChange = (e) => {
     const uploaded = e.target.files[0];
     setFile(uploaded);
@@ -32,9 +31,13 @@ function App() {
     formData.append("file", file);
 
     try {
-      const response = await axios.post("http://localhost:8000/redact", formData, {
-        responseType: "blob",
-      });
+      const response = await axios.post(
+        import.meta.env.VITE_BACKEND_URL + "/redact",
+        formData,
+        {
+          responseType: "blob",
+        }
+      );
       const blob = new Blob([response.data], { type: response.data.type });
       setRedactedBlob(blob);
       setRedactedURL(URL.createObjectURL(blob));
@@ -56,7 +59,11 @@ function App() {
   };
 
   useEffect(() => {
-    if (file && file.type === "application/vnd.openxmlformats-officedocument.wordprocessingml.document") {
+    if (
+      file &&
+      file.type ===
+        "application/vnd.openxmlformats-officedocument.wordprocessingml.document"
+    ) {
       const reader = new FileReader();
       reader.onload = async (e) => {
         const arrayBuffer = e.target.result;
@@ -67,7 +74,11 @@ function App() {
   }, [file]);
 
   useEffect(() => {
-    if (redactedBlob && redactedBlob.type === "application/vnd.openxmlformats-officedocument.wordprocessingml.document") {
+    if (
+      redactedBlob &&
+      redactedBlob.type ===
+        "application/vnd.openxmlformats-officedocument.wordprocessingml.document"
+    ) {
       const reader = new FileReader();
       reader.onload = async (e) => {
         const arrayBuffer = e.target.result;
@@ -80,12 +91,25 @@ function App() {
     }
   }, [redactedBlob]);
 
-
   const renderPreview = (url, type, isRedacted = false) => {
     if (type.includes("pdf")) {
-      return <iframe src={url} width="100%" height="500px" className="rounded-lg border shadow" title="PDF preview" />;
+      return (
+        <iframe
+          src={url}
+          width="100%"
+          height="500px"
+          className="rounded-lg border shadow"
+          title="PDF preview"
+        />
+      );
     } else if (type.includes("image")) {
-      return <img src={url} alt="preview" className="max-w-full max-h-[500px] text-center object-contain rounded-lg shadow" />;
+      return (
+        <img
+          src={url}
+          alt="preview"
+          className="max-w-full max-h-[500px] text-center object-contain rounded-lg shadow"
+        />
+      );
     } else if (type.includes("officedocument.wordprocessingml.document")) {
       return (
         <div className="p-4 border rounded bg-blue-50 text-blue-800">
@@ -94,11 +118,19 @@ function App() {
             ref={isRedacted ? redactedDocxContainer : docxContainer}
             className="mt-2 max-h-[500px] overflow-auto bg-white p-2 shadow"
           />
-          {isRedacted && <p className="mt-2 text-green-600 font-medium">Redacted DOCX ready. Click download below.</p>}
+          {isRedacted && (
+            <p className="mt-2 text-green-600 font-medium">
+              Redacted DOCX ready. Click download below.
+            </p>
+          )}
         </div>
       );
     } else {
-      return <p className="text-gray-600">Preview not supported for this file type.</p>;
+      return (
+        <p className="text-gray-600">
+          Preview not supported for this file type.
+        </p>
+      );
     }
   };
 
@@ -124,7 +156,9 @@ function App() {
 
         {originalURL && (
           <div className="mb-8">
-            <h2 className="text-lg font-semibold text-slate-700 mb-2">Original File Preview:</h2>
+            <h2 className="text-lg font-semibold text-slate-700 mb-2">
+              Original File Preview:
+            </h2>
             {renderPreview(originalURL, file?.type)}
           </div>
         )}
@@ -146,7 +180,9 @@ function App() {
             transition={{ duration: 0.6 }}
             className="mt-10"
           >
-            <h2 className="text-lg font-semibold text-slate-700 mb-2">Redacted File Preview:</h2>
+            <h2 className="text-lg font-semibold text-slate-700 mb-2">
+              Redacted File Preview:
+            </h2>
             {renderPreview(redactedURL, redactedBlob.type, true)}
 
             <div className="text-center mt-4">

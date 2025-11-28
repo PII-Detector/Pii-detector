@@ -4,6 +4,8 @@ from fastapi.middleware.cors import CORSMiddleware
 from app.extractor.extractor import redact_file_with_format
 import io
 import os
+from dotenv import load_dotenv
+load_dotenv()
 
 # Set TESSDATA_PREFIX for this session
 os.environ['TESSDATA_PREFIX'] = r'C:\Program Files\Tesseract-OCR\tessdata\\'
@@ -11,7 +13,7 @@ os.environ['TESSDATA_PREFIX'] = r'C:\Program Files\Tesseract-OCR\tessdata\\'
 app = FastAPI()
 
 origins = [
-    "http://localhost:5173",
+    os.getenv("FRONTEND_URL")
 ]
 
 app.add_middleware(

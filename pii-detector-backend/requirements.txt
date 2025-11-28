@@ -10,3 +10,4 @@ python-docx
 reportlab
 numpy
 opencv-python
+python-dotenv 
