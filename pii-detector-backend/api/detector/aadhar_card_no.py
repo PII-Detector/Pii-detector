@@ -1,6 +1,6 @@
 import re
-from app.utils.verhoeff_algorithm import validate_verhoeff
-from app.utils.regex import aadhaar_pattern
+from api.utils.verhoeff_algorithm import validate_verhoeff
+from api.utils.regex import aadhaar_pattern
 
 def detect_aadhar_card_no(text: str) -> dict:
     matches = []

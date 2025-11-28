@@ -2,7 +2,7 @@ from PIL import Image, ImageDraw
 import pytesseract
 import io
 import re
-from app.utils.regex import mobile_pattern
+from api.utils.regex import mobile_pattern
 
 def redact_image_with_mobile_number(image_bytes: bytes) -> bytes:
     image = Image.open(io.BytesIO(image_bytes))

@@ -1,6 +1,6 @@
 import re
 from datetime import datetime
-from app.utils.regex import dob_pattern, short_date_pattern
+from api.utils.regex import dob_pattern, short_date_pattern
 
 def is_valid_date(date_str):
     for fmt in ("%d-%m-%Y", "%d/%m/%Y", "%d %m %Y", "%Y-%m-%d", "%Y/%m/%d", "%Y %m %d"):

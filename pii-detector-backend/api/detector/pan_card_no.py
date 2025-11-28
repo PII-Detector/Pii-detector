@@ -1,4 +1,4 @@
-from app.utils.regex import pan_pattern
+from api.utils.regex import pan_pattern
 
 def detect_pan_card_no(text: str) -> dict:
     matches = []

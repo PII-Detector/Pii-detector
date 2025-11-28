@@ -1,5 +1,5 @@
 import re
-from app.utils.regex import mobile_pattern
+from api.utils.regex import mobile_pattern
 
 def detect_mobile_number(text: str) -> dict:
     matches = []

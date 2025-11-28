@@ -1,4 +1,4 @@
-from app.utils.regex import vid_pattern
+from api.utils.regex import vid_pattern
 
 def detect_vid(text: str) -> dict:
     matches = []

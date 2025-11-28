@@ -1,4 +1,4 @@
-from app.utils.regex import dl_pattern
+from api.utils.regex import dl_pattern
 
 def detect_driving_licence_no(text: str) -> dict:
     matches = []

@@ -1,4 +1,4 @@
-from app.utils.keyword import SIGNATURE_KEYWORDS
+from api.utils.keyword import SIGNATURE_KEYWORDS
 
 def detect_signature_keywords(text: str) -> dict:
     matches = []

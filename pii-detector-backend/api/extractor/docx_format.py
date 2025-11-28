@@ -1,12 +1,12 @@
 import re
 import io
 from docx import Document
-from app.detector.aadhar_card_no import detect_aadhar_card_no
-from app.detector.mobile_number import detect_mobile_number
-from app.detector.dob import detect_pii_dob
-from app.detector.driving_licence_no import detect_driving_licence_no
-from app.detector.address import detect_pii_address
-from app.detector.vid import detect_vid
+from api.detector.aadhar_card_no import detect_aadhar_card_no
+from api.detector.mobile_number import detect_mobile_number
+from api.detector.dob import detect_pii_dob
+from api.detector.driving_licence_no import detect_driving_licence_no
+from api.detector.address import detect_pii_address
+from api.detector.vid import detect_vid
 
 # ------------------ Masking Functions ------------------ #
 
