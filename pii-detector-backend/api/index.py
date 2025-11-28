@@ -24,6 +24,10 @@ app.add_middleware(
     allow_headers=["*"],
 )
 
+@app.get("/")
+async def root():
+    return {"message": "PII Detector Backend is running."}
+
 @app.post("/redact")
 async def redact_file(file: UploadFile = File(...)):
     contents = await file.read()
